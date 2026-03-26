@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аніме-Арт Галерея</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e1e2e, #2a2a3a);
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .gallery {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .art-image {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 255, 255, 0.3);
+            transition: opacity 0.5s ease-in-out;
+            opacity: 1;
+        }
+        .art-image.fade {
+            opacity: 0;
+        }
+        .tag-selector {
+            margin-bottom: 20px;
+        }
+        select {
+            background: #2a2a3a;
+            color: #e0e0e0;
+            border: 1px solid #4ecdc4;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        select:focus {
+            outline: none;
+            border-color: #ff6b6b;
+        }
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        .like-btn {
+            background: linear-gradient(45deg, #ff9ff3, #f368e0);
+            position: relative;
+        }
+        .like-btn.liked {
+            background: linear-gradient(45deg, #ff3838, #ff9ff3);
+        }
+        .like-btn::before {
+            content: '❤️';
+            font-size: 20px;
+            margin-right: 8px;
+        }
+        .favorites {
+            width: 100%;
+            margin-top: 40px;
+            display: none;
+        }
+        .favorites.show {
+            display: block;
+        }
+        .favorites-header {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #4ecdc4;
+        }
+        .favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .favorite-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        .favorite-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .favorite-item img:hover {
+            transform: scale(1.05);
+        }
+        .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 0, 0, 0.8);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+        .remove-btn:hover {
+            background: rgba(255, 0, 0, 1);
+        }
+        .toggle-favorites {
+            margin-top: 20px;
+        }
+        /* Модальне вікно для перегляду */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+        }
+        .modal-content img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: #ccc;
+        }
+        @media (max-width: 768px) {
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            .favorites-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Аніме-Арт Галерея</h1>
+        <div class="gallery">
+            <div class="tag-selector">
+                <label for="tagSelect">Оберіть категорію:</label>
+                <select id="tagSelect">
+                    <option value="waifu">Загальна</option>
+                    <option value="neko">Неко</option>
+                    <option value="genshin">Геншин</option>
+                    <option value="awoo">Аwoo</option>
+                </select>
+            </div>
+            <img id="artImage" class="art-image" src="" alt="Аніме-арт" style="display: none;">
+            <div class="buttons">
+                <button id="nextBtn">Next (Новий арт)</button>
+                <button id="downloadBtn" style="display: none;">Завантажити</button>
+                <button id="likeBtn" class="like-btn" style="display: none;"></button>
+            </div>
+        </div>
+        <button id="toggleFavorites" class="toggle-favorites">Показати Улюблені</button>
+        <div id="favorites" class="favorites">
+            <h2 class="favorites-header">Улюблені</h2>
+            <div id="favoritesGrid" class="favorites-grid"></div>
+        </div>
+    </div>
+
+    <!-- Модальне вікно -->
+    <div id="modal" class="modal">
+        <span class="close">&times;</span>
+        <div class="modal-content">
+            <img id="modalImg" src="" alt="Перегляд арту">
+        </div>
+    </div>
+
+    <script>
+        const artImage = document.getElementById('artImage');
+        const nextBtn = document.getElementById('nextBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const likeBtn = document.getElementById('likeBtn');
+        const tagSelect = document.getElementById('tagSelect');
+        const toggleFavorites = document.getElementById('toggleFavorites');
+        const favorites = document.getElementById('favorites');
+        const favoritesGrid = document.getElementById('favoritesGrid');
+        const modal = document.getElementById('modal');
+        const modalImg = document.getElementById('modalImg');
+        const closeModal = document.querySelector('.close');
+
+        let currentArtUrl = '';
+        let currentTag = 'waifu';
+        let favoritesList = JSON.parse(localStorage.getItem('animeFavorites')) || [];
+
+        // Функція для отримання випадкового арту з API за тегом
+        async function fetchRandomArt(tag) {
+            try {
+                const response = await fetch(`https://api.waifu.pics/sfw/${tag}`);
+                const data = await response.json();
+                return data.url;
+            } catch (error) {
+                console.error('Помилка при отриманні арту:', error);
+                return 'https://via.placeholder.com/800x600?text=Error+Loading+Art'; // Fallback
+            }
+        }
+
+        // Функція для завантаження нового арту з анімацією
+        async function loadNewArt() {
+            artImage.classList.add('fade');
+            setTimeout(async () => {
+                currentArtUrl = await fetchRandomArt(currentTag);
+                artImage.src = currentArtUrl;
+                artImage.style.display = 'block';
+                downloadBtn.style.display = 'inline-block';
+                likeBtn.style.display = 'inline-block';
+                likeBtn.classList.toggle('liked', favoritesList.includes(currentArtUrl));
+                artImage.classList.remove('fade');
+            }, 250);
+        }
+
+        // Подія для вибору тегу
+        tagSelect.addEventListener('change', () => {
+            currentTag = tagSelect.value;
+            loadNewArt();
+        });
+
+        // Подія для кнопки Next
+        nextBtn.addEventListener('click', loadNewArt);
+
+        // Подія для кнопки Завантажити
+        downloadBtn.addEventListener('click', () => {
+            if (currentArtUrl) {
+                const link = document.createElement('a');
+                link.href = currentArtUrl;
+                link.download = 'anime-art.jpg';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        });
+
+        // Подія для кнопки Лайк
+        likeBtn.addEventListener('click', () => {
+            if (favoritesList.includes(currentArtUrl)) {
+                favoritesList = favoritesList.filter(url => url !== currentArtUrl);
+                likeBtn.classList.remove('liked');
+            } else {
+                favoritesList.push(currentArtUrl);
+                likeBtn.classList.add('liked');
+            }
+            localStorage.setItem('animeFavorites', JSON.stringify(favoritesList));
+            renderFavorites();
+        });
+
+        // Функція для відображення улюблених
+        function renderFavorites() {
+            favoritesGrid.innerHTML = '';
+            favoritesList.forEach(url => {
+                const item = document.createElement('div');
+                item.className = 'favorite-item';
+                item.innerHTML = `
+                    <img src="${url}" alt="Улюблений арт" data-url="${url}">
+                    <button class="remove-btn" data-url="${url}">×</button>
+                `;
+                favoritesGrid.appendChild(item);
+            });
+        }
+
+        // Подія для відкриття модального вікна при кліку на зображення в улюблених
+        favoritesGrid.addEventListener('click', (e) => {
+            if (e.target.tagName === 'IMG' && !e.target.classList.contains('remove-btn')) {
+                const url = e.target.dataset.url;
+                modalImg.src = url;
+                modal.classList.add('show');
+            }
+        });
+
+        // Подія для видалення з улюблених
+        favoritesGrid.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-btn')) {
+                e.stopPropagation(); // Запобігає відкриттю модального вікна
+                const url = e.target.dataset.url;
+                favoritesList = favoritesList.filter(item => item !== url);
+                localStorage.setItem('animeFavorites', JSON.stringify(favoritesList));
+                renderFavorites();
+                if (currentArtUrl === url) {
+                    likeBtn.classList.remove('liked');
+                }
+            }
+        });
+
+        // Подія для закриття модального вікна
+        closeModal.addEventListener('click', () => {
+            modal.classList.remove('show');
+        });
+
+        // Закриття модального вікна при кліку поза ним
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('show');
+            }
+        });
+
+        // Подія для перемикання відображення улюблених
+        toggleFavorites.addEventListener('click', () => {
+            favorites.classList.toggle('show');
+            toggleFavorites.textContent = favorites.classList.contains('show') ? 'Сховати Улюблені' : 'Показати Улюблені';
+        });
+
+        // Завантаження першого арту при старті
+        loadNewArt();
+        renderFavorites();
+    </script>
+</body>
+</html>
